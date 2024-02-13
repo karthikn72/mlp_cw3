@@ -1,8 +1,4 @@
-import os
-project_index = os.getcwd().find('diversification_block')
-root = os.getcwd()[0:project_index] + 'diversification_block'
-import sys
-sys.path.append(root)
+
 import torch
 from torch import nn
 import numpy as np
@@ -14,10 +10,12 @@ class DiversificationBlock(nn.Module):
 
     def __init__(self, pk=0.5, r=3, c=4):
         """
-        实现论文中的diversificationblock, 接受一个三维的feature map，返回一个numpy的列表，作为遮罩
-        :param pk: pk是bc'中随机遮罩的概率
-        :param r: bc''中行分成几块
-        :param c: bc''中列分成几块
+        Implement the Diversification Block in the paper by taking three-dimensional feature map as input, 
+        and return a numpy list as a mask
+        
+        :param pk: pk is the probability of random mask in bc'
+        :param r: bc'' is divided into several pieces
+        :param c: bc'' column is divided into several pieces
         """
         super(DiversificationBlock, self).__init__()
         self.pk = pk
@@ -78,6 +76,7 @@ class DiversificationBlock(nn.Module):
 if __name__ == '__main__':
     feature_maps = torch.rand([3,3,4])
     print("Feature maps:\n", feature_maps)
+    print("Feature maps shape:\n", feature_maps.shape)
     db = DiversificationBlock()
     res = db(feature_maps)
     print("Result:\n", res)

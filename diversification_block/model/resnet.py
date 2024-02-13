@@ -9,10 +9,19 @@ import copy
 from torch import nn, optim
 from torchvision.models import resnet50
 from torch.optim import lr_scheduler
-from model.diversification_block import DiversificationBlock
-from utils.write_log import log_here
-from config.config_para import opt
+from diversification_block import DiversificationBlock
 from target_data.GetData import dataloaders
+
+class Config(object):
+    def __init__(self):
+        self.batch_size = 16
+        self.num_workers = 4
+        self.epochs = 25
+        self.log_path = 'log.txt'
+        self.num_classes = 10
+
+
+opt = Config()
 
 
 class IndetifyLayer(nn.Module):
@@ -49,17 +58,17 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=opt.epochs, s
     path = root + '/checkpoints/model.pth'
     try:
         model.load_state_dict(torch.load(path))
-        log_here('info', "load path OK!")
+        print('info', "load path OK!")
     except:
-        log_here('debug', "no model.pth in %s" % path)
+        print('debug', "no model.pth in %s" % path)
     best_model_wts = copy.deepcopy(model.state_dict())
     best_acc = 0.0
 
     for epoch in range(num_epochs):
         epoch_info = 'Epoch {}/{}'.format(epoch, num_epochs - 1)
         blank = '-' * 10
-        log_here('info', epoch_info)
-        log_here('info', blank)
+        print('info', epoch_info)
+        print('info', blank)
 
         # Each epoch has a training and validation phase
         for phase in ['train', 'val']:
@@ -71,7 +80,7 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=opt.epochs, s
             running_loss = 0.0
             running_corrects = 0
 
-            # Iterate over tartgetdata.
+            # Iterate over target data
             for inputs, labels in dataloaders[phase]:
                 inputs = inputs.to(device)
                 labels = labels.to(device)
@@ -101,7 +110,7 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=opt.epochs, s
             epoch_acc = running_corrects.double() / dataset_sizes[phase]
 
             loss_info = '{} Loss: {:.4f} Acc: {:.4f}'.format(phase, epoch_loss, epoch_acc)
-            log_here('info', loss_info)
+            print('info', loss_info)
 
             # deep copy the model
             if phase == 'val' and epoch_acc > best_acc:
@@ -111,15 +120,20 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=opt.epochs, s
                 torch.save(best_model_wts, os.path.join(save_path, prefix))
                 prefix_1 = 'model.pth'
                 torch.save(best_model_wts, os.path.join(save_path, prefix_1))
-                log_here('info', "Model has been saved as %s!" % prefix)
+                print('info', "Model has been saved as %s!" % prefix)
 
     time_elapsed = time.time() - since
     time_info = 'Training complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60)
     val_info = 'Best val Acc: {:4f}'.format(best_acc)
-    log_here('info', time_info)
-    log_here('info', val_info)
+    print('info', time_info)
+    print('info', val_info)
 
     # load best model weights
     model.load_state_dict(best_model_wts)
     return model
 
+if __name__ == '__main__':
+    model_ft = train_model(model_ft, criterion, optimizer_ft, exp_lr_scheduler)
+    torch.save(model_ft, root + '/checkpoints/model.pth')
+    print('info', "Model has been saved as model.pth!")
+    print('info', "Training is over!")
