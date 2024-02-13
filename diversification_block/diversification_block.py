@@ -3,9 +3,6 @@ import torch
 from torch import nn
 import numpy as np
 
-
-
-
 class DiversificationBlock(nn.Module):
 
     def __init__(self, pk=0.5, r=3, c=4):
@@ -23,12 +20,15 @@ class DiversificationBlock(nn.Module):
         self.c = c
 
     def forward(self, feature_maps):
-        def helperb1(feature_map):
+        
+        def peak_supress(feature_map):
             row, col = torch.where(feature_map == torch.max(feature_map))
             b1 = torch.zeros_like(feature_map)
             for i in range(len(row)):
                 r, c = int(row[i]), int(col[i])
                 b1[r, c] = 1
+            mask = torch.bernoulli(torch.full_like(b1, self.pk))
+            b1 = b1 * mask
             return b1
 
         def from_num_to_block(mat, r, c, num):
@@ -56,13 +56,13 @@ class DiversificationBlock(nn.Module):
             feature_maps_list = torch.split(feature_maps, 1)
             for feature_map in feature_maps_list:
                 feature_map = feature_map.squeeze()
-                tmp = helperb1(feature_map)
+                tmp = peak_supress(feature_map)
                 resb1.append(tmp)
                 tmp1 = from_num_to_block(feature_map, self.r, self.c, 3)
                 resb2.append(tmp1)
 
         elif len(feature_maps.shape) == 2:
-            tmp = helperb1(feature_maps)
+            tmp = peak_supress(feature_maps)
             tmp1 = from_num_to_block(feature_maps, self.r, self.c, 3)
             resb1 = [tmp]
             resb2 = [tmp1]
