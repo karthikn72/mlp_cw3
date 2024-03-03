@@ -7,7 +7,7 @@ import os
 import numpy as np
 import time
 
-from storage_utils import save_statistics
+from pytorch_mlp_framework.storage_utils import save_statistics
 from matplotlib import pyplot as plt
 import matplotlib
 matplotlib.rcParams.update({'font.size': 8})
@@ -31,7 +31,6 @@ class ExperimentBuilder(nn.Module):
         """
         super(ExperimentBuilder, self).__init__()
 
-
         self.experiment_name = experiment_name
         self.model = network_model
 
@@ -51,7 +50,7 @@ class ExperimentBuilder(nn.Module):
 
         print('here')
 
-        self.model.reset_parameters()  # re-initialize network parameters
+        # self.model.reset_parameters()  # re-initialize network parameters
         self.train_data = train_data
         self.val_data = val_data
         self.test_data = test_data
