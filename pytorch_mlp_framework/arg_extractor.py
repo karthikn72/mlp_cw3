@@ -23,7 +23,6 @@ def get_args():
     parser.add_argument('--seed', nargs="?", type=int, default=7112018,
                         help='Seed to use for random number generator for experiment')
     parser.add_argument('--num_epochs', nargs="?", type=int, default=100, help='Total number of epochs for model training')
-    parser.add_argument('--num_classes', nargs="?", type=int, default=100, help='Number of classes in the dataset')
     parser.add_argument('--experiment_name', nargs="?", type=str, default="exp_1",
                         help='Experiment name - to be used for building the experiment folder')
     parser.add_argument('--use_gpu', nargs="?", type=str2bool, default=True,
@@ -38,6 +37,8 @@ def get_args():
                         help='The pretraining scheme to use for the experiment')
     parser.add_argument('--dataloader', type=str, default='birds',
                         help='The dataset to finetune on for the experiment')
+    parser.add_argument('height', type=int, default=224, help='The height of the input image')
+    parser.add_argument('width', type=int, default=224, help='The width of the input image')
     
     args = parser.parse_args()
     print(args)

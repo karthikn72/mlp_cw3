@@ -8,15 +8,15 @@ import torch
 from torchvision import transforms, datasets
 from torchvision.models import resnet50
 
-def get_dataloaders(dataloader, transform):
+def get_dataloaders(dataloader, transform, batch_size=32):
     if dataloader == 'aircrafts':
         train_data = datasets.FGVCAircraft(root='data', download=False, transform=transform, split='train')
         val_data = datasets.FGVCAircraft(root='data', download=False, transform=transform, split='val')
         test_data = datasets.FGVCAircraft(root='data', download=False, transform=transform, split='test')
         
-        train_dataloader = torch.utils.data.DataLoader(train_data, batch_size=32, shuffle=True)
-        val_dataloader = torch.utils.data.DataLoader(val_data, batch_size=32, shuffle=True)
-        test_dataloader = torch.utils.data.DataLoader(test_data, batch_size=32, shuffle=True)
+        train_dataloader = torch.utils.data.DataLoader(train_data, batch_size=batch_size, shuffle=True)
+        val_dataloader = torch.utils.data.DataLoader(val_data, batch_size=batch_size, shuffle=True)
+        test_dataloader = torch.utils.data.DataLoader(test_data, batch_size=batch_size, shuffle=True)
         
     elif dataloader == 'birds':
         train_data = Cub2011(root='data', train=True, transform=transform, download=False)
@@ -27,9 +27,9 @@ def get_dataloaders(dataloader, transform):
         test_data = Cub2011(root='data', train=False, transform=transform, download=False)
         
         # Create the bird DataLoader
-        train_dataloader = torch.utils.data.DataLoader(train_data, batch_size=32, shuffle=True)
-        val_dataloader = torch.utils.data.DataLoader(val_data, batch_size=32, shuffle=True)
-        test_dataloader = torch.utils.data.DataLoader(test_data, batch_size=32, shuffle=True)
+        train_dataloader = torch.utils.data.DataLoader(train_data, batch_size=batch_size, shuffle=True)
+        val_dataloader = torch.utils.data.DataLoader(val_data, batch_size=batch_size, shuffle=True)
+        test_dataloader = torch.utils.data.DataLoader(test_data, batch_size=batch_size, shuffle=True)
     
     return train_dataloader, val_dataloader, test_dataloader, train_data.classes
 
@@ -51,7 +51,9 @@ if __name__ == '__main__':
                                     transforms.ToTensor(),
                                     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
     
-    train_dataloader, val_dataloader, test_dataloader, classes = get_dataloaders(args.dataloader, transform)
+    train_dataloader, val_dataloader, test_dataloader, classes = get_dataloaders(dataloader=args.dataloader, 
+                                                                                 transform=transform, 
+                                                                                 batch_size=args.batch_size)
     model = get_models(args.model, args.pretrain)
     num_classes = len(classes)
     model.fc = torch.nn.Linear(model.fc.in_features, num_classes)
