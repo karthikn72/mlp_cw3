@@ -75,7 +75,7 @@ class ExperimentBuilder(nn.Module):
                                     weight_decay=weight_decay_coefficient, lr=learning_rate)
         self.learning_rate_scheduler = optim.lr_scheduler.CosineAnnealingLR(self.optimizer,
                                                                             T_max=num_epochs,
-                                                                            eta_min=0.00002)
+                                                                            eta_min=0.0001)
         # Generate the directory names
         self.experiment_root = os.path.abspath("experiments")
         self.experiment_folder = os.path.abspath(os.path.join(self.experiment_root, experiment_name))
@@ -88,8 +88,11 @@ class ExperimentBuilder(nn.Module):
 
         if not os.path.exists(self.experiment_root):  # If experiment directory does not exist
             os.mkdir(self.experiment_root)  # create the experiment root
+        if not os.path.exists(self.experiment_folder):
             os.mkdir(self.experiment_folder)  # create the experiment directory
+        if not os.path.exists(self.experiment_logs):
             os.mkdir(self.experiment_logs)  # create the experiment log directory
+        if not os.path.exists(self.experiment_saved_models):
             os.mkdir(self.experiment_saved_models)  # create the experiment saved models directory
 
         self.num_epochs = num_epochs
@@ -295,12 +298,12 @@ class ExperimentBuilder(nn.Module):
             
             ################################################################
             ##### Plot Gradient Flow at each Epoch during Training  ######
-            print("Generating Gradient Flow Plot at epoch {}".format(epoch_idx))
-            plt = self.plot_grad_flow(self.model.named_parameters())
-            if not os.path.exists(os.path.join(self.experiment_saved_models, 'gradient_flow_plots')):
-                os.mkdir(os.path.join(self.experiment_saved_models, 'gradient_flow_plots'))
+            # print("Generating Gradient Flow Plot at epoch {}".format(epoch_idx))
+            # plt = self.plot_grad_flow(self.model.named_parameters())
+            # if not os.path.exists(os.path.join(self.experiment_saved_models, 'gradient_flow_plots')):
+            #   os.mkdir(os.path.join(self.experiment_saved_models, 'gradient_flow_plots'))
                 # plt.legend(loc="best")
-            plt.savefig(os.path.join(self.experiment_saved_models, 'gradient_flow_plots', "epoch{}.pdf".format(str(epoch_idx))))
+            # plt.savefig(os.path.join(self.experiment_saved_models, 'gradient_flow_plots', "epoch{}.pdf".format(str(epoch_idx))))
             ################################################################
         
         print("Generating test set evaluation metrics")
