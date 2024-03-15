@@ -35,13 +35,13 @@ export DATASET_DIR=${TMP}/datasets/
 source /home/${STUDENT_ID}/miniconda3/bin/activate mlp
 cd ..
 python train_models.py --batch_size 32 \
-                        --num_epochs 100 \ 
-                        --experiment_name resnet50_birds_224_224 \
+                        --num_epochs 100 \
+                        --experiment_name "resnet50_birds_224_224" \
                         --seed 0 \
-                        --use_gpu true \
-                        --model resnet50 \
-                        --pretrain imagenet \
-                        --dataset birds \
+                        --use_gpu "true" \
+                        --model "resnet50" \
+                        --pretrain "imagenet" \
+                        --dataloader "birds" \
                         --height 224 \
                         --width 224
 

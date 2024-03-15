@@ -37,8 +37,8 @@ def get_args():
                         help='The pretraining scheme to use for the experiment')
     parser.add_argument('--dataloader', type=str, default='birds',
                         help='The dataset to finetune on for the experiment')
-    parser.add_argument('height', type=int, default=224, help='The height of the input image')
-    parser.add_argument('width', type=int, default=224, help='The width of the input image')
+    parser.add_argument('--height', type=int, default=224, help='The height of the input image')
+    parser.add_argument('--width', type=int, default=224, help='The width of the input image')
     
     args = parser.parse_args()
     print(args)

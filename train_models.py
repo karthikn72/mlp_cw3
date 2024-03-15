@@ -13,6 +13,10 @@ def get_dataloaders(dataloader, transform, batch_size=32):
         train_data = datasets.FGVCAircraft(root='data', download=False, transform=transform, split='train')
         val_data = datasets.FGVCAircraft(root='data', download=False, transform=transform, split='val')
         test_data = datasets.FGVCAircraft(root='data', download=False, transform=transform, split='test')
+        targets = train_data.classes
+        print("Number of training samples: ", len(train_data))
+        print("Number of validation samples: ", len(val_data))
+        print("Number of testing samples: ", len(test_data))
         
         train_dataloader = torch.utils.data.DataLoader(train_data, batch_size=batch_size, shuffle=True)
         val_dataloader = torch.utils.data.DataLoader(val_data, batch_size=batch_size, shuffle=True)
@@ -20,18 +24,22 @@ def get_dataloaders(dataloader, transform, batch_size=32):
         
     elif dataloader == 'birds':
         train_data = Cub2011(root='data', train=True, transform=transform, download=False)
+        targets = train_data.classes
         # Split train_bird_data into training and validation sets
         train_size = int(0.8 * len(train_data))
         val_size = len(train_data) - train_size
         train_data, val_data = torch.utils.data.random_split(train_data, [train_size, val_size])
         test_data = Cub2011(root='data', train=False, transform=transform, download=False)
-        
+        print("Number of training samples: ", len(train_data))
+        print("Number of validation samples: ", len(val_data))
+        print("Number of testing samples: ", len(test_data))
         # Create the bird DataLoader
         train_dataloader = torch.utils.data.DataLoader(train_data, batch_size=batch_size, shuffle=True)
         val_dataloader = torch.utils.data.DataLoader(val_data, batch_size=batch_size, shuffle=True)
         test_dataloader = torch.utils.data.DataLoader(test_data, batch_size=batch_size, shuffle=True)
     
-    return train_dataloader, val_dataloader, test_dataloader, train_data.classes
+    # print(train_data._labels)
+    return train_dataloader, val_dataloader, test_dataloader, targets
 
 def get_models(model, pretrain_scheme):
     if model == 'resnet50':
