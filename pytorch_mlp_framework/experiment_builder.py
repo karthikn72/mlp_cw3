@@ -71,11 +71,12 @@ class ExperimentBuilder(nn.Module):
         print('Total number of conv layers', num_conv_layers)
         print('Total number of linear layers', num_linear_layers)
 
-        self.optimizer = optim.Adam(self.parameters(), amsgrad=False,
-                                    weight_decay=weight_decay_coefficient, lr=learning_rate)
+        self.optimizer = optim.SGD(self.parameters(),
+                                    weight_decay=weight_decay_coefficient, 
+                                    lr=learning_rate,
+                                    momentum=0.9)
         self.learning_rate_scheduler = optim.lr_scheduler.CosineAnnealingLR(self.optimizer,
-                                                                            T_max=num_epochs,
-                                                                            eta_min=0.0001)
+                                                                            T_max=num_epochs)
         # Generate the directory names
         self.experiment_root = os.path.abspath("experiments")
         self.experiment_folder = os.path.abspath(os.path.join(self.experiment_root, experiment_name))
@@ -177,7 +178,7 @@ class ExperimentBuilder(nn.Module):
         out = self.model.forward(x)  # forward the data in the model
 
 
-        loss = F.cross_entropy(input=out, target=y)  # compute loss
+        loss = F.cross_entropy(input=out, target=y, label_smoothing=0.1)  # compute loss
 
         self.optimizer.zero_grad()  # set all weight grads from previous training iters to 0
         loss.backward()  # backpropagate to compute gradients for current iter loss
@@ -201,7 +202,7 @@ class ExperimentBuilder(nn.Module):
             device=self.device)  # convert data to pytorch tensors and send to the computation device
         out = self.model.forward(x)  # forward the data in the model
 
-        loss = F.cross_entropy(input=out, target=y)  # compute loss
+        loss = F.cross_entropy(input=out, target=y, label_smoothing=0.1)  # compute loss
 
         _, predicted = torch.max(out.data, 1)  # get argmax of predictions
         accuracy = np.mean(list(predicted.eq(y.data).cpu()))  # compute accuracy
