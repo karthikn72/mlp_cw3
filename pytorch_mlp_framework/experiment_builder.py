@@ -2,6 +2,8 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
+from torchinfo import summary
+
 import tqdm
 import os
 import numpy as np
@@ -60,16 +62,17 @@ class ExperimentBuilder(nn.Module):
         num_linear_layers = 0
         total_num_parameters = 0
         for name, value in self.named_parameters():
-            print(name, value.shape)
+            # print(name, value.shape)
             if all(item in name for item in ['conv', 'weight']):
                 num_conv_layers += 1
             if all(item in name for item in ['linear', 'weight']):
                 num_linear_layers += 1
             total_num_parameters += np.prod(value.shape)
-
-        print('Total number of parameters', total_num_parameters)
-        print('Total number of conv layers', num_conv_layers)
-        print('Total number of linear layers', num_linear_layers)
+            
+        print(self.model)
+        # print('Total number of parameters', total_num_parameters)
+        # print('Total number of conv layers', num_conv_layers)
+        # print('Total number of linear layers', num_linear_layers)
 
         self.optimizer = optim.SGD(self.parameters(),
                                     weight_decay=weight_decay_coefficient, 
@@ -100,11 +103,15 @@ class ExperimentBuilder(nn.Module):
         self.criterion = nn.CrossEntropyLoss().to(self.device)  # send the loss computation to the GPU
 
         if continue_from_epoch == -2:  # if continue from epoch is -2 then continue from latest saved model
-            self.state, self.best_val_model_idx, self.best_val_model_acc = self.load_model(
-                model_save_dir=self.experiment_saved_models, model_save_name="train_model",
-                model_idx='latest')  # reload existing model from epoch and return best val model index
-            # and the best val acc of that model
-            self.starting_epoch = int(self.state['model_epoch'])
+            if os.path.exists(os.path.join(self.experiment_saved_models, "train_model_latest")):
+                self.state, self.best_val_model_idx, self.best_val_model_acc = self.load_model(
+                    model_save_dir=self.experiment_saved_models, model_save_name="train_model",
+                    model_idx='latest')  # reload existing model from epoch and return best val model index
+                # and the best val acc of that model
+                self.starting_epoch = int(self.state['model_epoch'])
+            else:
+                self.state = dict()
+                self.starting_epoch = 0
 
         elif continue_from_epoch > -1:  # if continue from epoch is greater than -1 then
             self.state, self.best_val_model_idx, self.best_val_model_acc = self.load_model(
@@ -245,7 +252,7 @@ class ExperimentBuilder(nn.Module):
         """
         total_losses = {"train_acc": [], "train_loss": [], "val_acc": [],
                         "val_loss": []}  # initialize a dict to keep the per-epoch metrics
-        for i, epoch_idx in enumerate(range(self.starting_epoch, self.num_epochs)):
+        for i, epoch_idx in enumerate(range(self.starting_epoch, self.starting_epoch + self.num_epochs)):
             epoch_start_time = time.time()
             current_epoch_losses = {"train_acc": [], "train_loss": [], "val_acc": [], "val_loss": []}
             self.current_epoch = epoch_idx
