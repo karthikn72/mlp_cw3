@@ -66,14 +66,18 @@ def load_model_weights(model, model_path):
 def get_models(model, pretrain_scheme, num_classes=None):
     weight_path = 'data/imagenet21k_weights/'
     if model == 'resnet50':
-        if pretrain_scheme == 'imagenet':
+        if pretrain_scheme == 'base':
+            model = resnet50()
+        elif pretrain_scheme == 'imagenet':
             model = resnet50(weights=ResNet50_Weights.DEFAULT)
         elif pretrain_scheme == 'imagenet21k':
             model = resnet50()
             weight_path = os.path.join(weight_path, 'resnet50_miil_21k.pth')
             model = load_model_weights(model, weight_path)
     elif model == 'vitb16':
-        if pretrain_scheme == 'imagenet':
+        if pretrain_scheme == 'base':
+            model = vit_b_16()
+        elif pretrain_scheme == 'imagenet':
             model = vit_b_16(weights=ViT_B_16_Weights.DEFAULT)
         elif pretrain_scheme == 'imagenet21k':
             model_kwargs = dict(
@@ -98,7 +102,6 @@ if __name__ == '__main__':
             transforms.Resize((args.height, args.width)),
             transforms.RandomCrop(crop_size, padding=4),
             transforms.RandomHorizontalFlip(),
-            transforms.ElasticTransform(250.0),
             transforms.RandomRotation(180),
             transforms.Resize((224, 224), interpolation=Image.BICUBIC),
             transforms.ToTensor(),
@@ -117,6 +120,7 @@ if __name__ == '__main__':
             transforms.Resize((args.height, args.width)),
             transforms.RandomCrop(crop_size, padding=4),
             transforms.RandomHorizontalFlip(),
+            transforms.RandomRotation(180),
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
             ])
@@ -137,7 +141,7 @@ if __name__ == '__main__':
     
     model = get_models(args.model, args.pretrain, num_classes=num_classes)
     
-    if args.model == 'vitb16' and args.pretrain == 'imagenet':
+    if args.model == 'vitb16' and args.pretrain in ['imagenet', 'base']:
         model.heads[0].out_features = num_classes
     elif args.model == 'resnet50':
         model.fc = torch.nn.Linear(model.fc.in_features, num_classes)

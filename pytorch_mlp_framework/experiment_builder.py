@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
-from torchinfo import summary
 
 import tqdm
 import os
@@ -250,11 +249,11 @@ class ExperimentBuilder(nn.Module):
         Runs experiment train and evaluation iterations, saving the model and best val model and val model accuracy after each epoch
         :return: The summary current_epoch_losses from starting epoch to total_epochs.
         """
-        total_losses = {"train_acc": [], "train_loss": [], "val_acc": [],
+        total_losses = {"epoch": [], "train_acc": [], "train_loss": [], "val_acc": [],
                         "val_loss": []}  # initialize a dict to keep the per-epoch metrics
         for i, epoch_idx in enumerate(range(self.starting_epoch, self.starting_epoch + self.num_epochs)):
             epoch_start_time = time.time()
-            current_epoch_losses = {"train_acc": [], "train_loss": [], "val_acc": [], "val_loss": []}
+            current_epoch_losses = {"epoch": epoch_idx, "train_acc": [], "train_loss": [], "val_acc": [], "val_loss": []}
             self.current_epoch = epoch_idx
             with tqdm.tqdm(total=len(self.train_data)) as pbar_train:  # create a progress bar for training
                 for idx, (x, y) in enumerate(self.train_data):  # get data batches
@@ -279,8 +278,7 @@ class ExperimentBuilder(nn.Module):
             for key, value in current_epoch_losses.items():
                 total_losses[key].append(np.mean(
                     value))  # get mean of all metrics of current epoch metrics dict, to get them ready for storage and output on the terminal.
-
-            save_statistics(experiment_log_dir=self.experiment_logs, filename='summary.csv',
+            save_statistics(experiment_log_dir=self.experiment_logs, filename='new_summary.csv',
                             stats_dict=total_losses, current_epoch=i,
                             continue_from_mode=True if (self.starting_epoch != 0 or i > 0) else False)  # save statistics to stats file.
 
@@ -331,6 +329,7 @@ class ExperimentBuilder(nn.Module):
 
         test_losses = {key: [np.mean(value)] for key, value in
                        current_epoch_losses.items()}  # save test set metrics in dict format
+        test_losses['epoch'] = [self.best_val_model_idx]  # save the epoch at which the best model was saved
         save_statistics(experiment_log_dir=self.experiment_logs, filename='test_summary.csv',
                         # save test set metrics on disk in .csv format
                         stats_dict=test_losses, current_epoch=0, continue_from_mode=False)
